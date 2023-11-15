@@ -49,8 +49,10 @@ Write-write conflict 在本文设计中通过abort避免：如果另一个transa
 1. 为了保证serializability，得确保all reads of a transaction在结束时还没有变动。本篇论文采用了optimistic execution+一个validation phase
 2. validation phase检查在该transaction执行期间(startTimestamp -> committedTimestamp)，有没有最近完成的create transaction，update transaction，delete transaction，create & delete transaction和该transaction的read set相交
    - 传统的做法(postgresql)是tracking 该transaction的全部read obejects再最后完成时再读一遍，performance开销很大
-   - 本文做法利用undo buffer，precision locking和recently commited transactions
+   - 本文做法利用undo buffer，precision logging和recently commited transactions
      - 首先从在startTimestamp之后committed的oldest transaction开始，检查它undo buffer里的内容是否和transaction predicates match，如果match, abort current transaction
+     - precision logging - 用于track predicates
+       - We log predicates of both access patterns (index and table scan) in our implementation. Predicates of a base table access are expressed as restrictions on one or more attributes of the table. We log these restrictions in our predicate log on a per-relation basis. Index accesses are treated similarly by logging the point and range lookups on the index. Index nested loop joins are treated differently. In this case, we log all values that we read from the index as predicates. As we potentially read many values from the index, we subsequently coarsen these values to ranges and store these ranges as predicates in the predicate log instead. Other join types are not treated this way. These joins are preceded by (potentially restricted) base table accesses.
 
 
 

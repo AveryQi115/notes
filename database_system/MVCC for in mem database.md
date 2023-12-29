@@ -3,13 +3,27 @@
 背景：
 
 - Transaction Isolation是DBMS的一个基础feature，确保每个transaction都像独自占有DB一样，传统的TI由locking提供
+
 - locking有两个缺陷：
   - reader和writer有冲突
   - 从transaction的视角来看，read-only的transaction跟其他任何transaction没有冲突，也不存在顺序。但是由locking保证的TI不等所有read-only transaction结束不能开始update transaction；或者该update transaction会被abort
+  
 - 现代DBMS大多采用MVCC，每次update不更新原数据而是新建一个version，这种机制不用locking
+
 - 实现MVCC的DBMS大多使用Snapshot Isolation
   - Snapshot Isolation确保每个transaction看见整个DB的certain state并且DBMS确保concurrent transaction不同时更新同一个data object
+  
   - Snapshot isolation虽好，但是在这种isolation下一些non-serializable schedules are still allowed
+  
+    ```
+    txn1: Update a = 1 where a = 0;
+    txn2: Update a = 0 where a = 1;
+    txn1: Commit
+    txn2: Commit
+    ```
+  
+    This is allowed by snapshot isolation but will is non-serializable. It cause phatoms.
+  
 - 虽然Snapshot Isolation不完美，但是传统实现完全Serializable的方法太expensive了
   - 传统方法要求DBMS keep track of every transaction's entire read set，对read-heavy的workload来说很大负担
   - 传统方法的设计有时导致silent data corruption，making the bugs hard-to-detect

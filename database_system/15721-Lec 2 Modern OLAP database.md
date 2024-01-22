@@ -1,5 +1,12 @@
 # 15721-Lec 2 Modern OLAP database
 
+## History
+
+1. Data warehouse (cannot handle unstructured/semi-structured data)
+2. Data Lake (ETL -> data lake -> ETL -> data warehouse, complicated structure)
+3. Lakehouse (Store changes in row-oriented log-structured files with indexes. Periodically compact recently added data into read-only columnar files.)
+4. OLAP database (Column-oriented, specifically designed for analytics workload)
+
 ## Introduction
 
 ![image-20231114190256944](img/distributed_query_execution.png)
